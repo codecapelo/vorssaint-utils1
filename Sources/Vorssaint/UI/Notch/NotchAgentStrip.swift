@@ -14,6 +14,8 @@ struct NotchAgentStrip: View {
     @ObservedObject private var l10n = L10n.shared
     @AppStorage(DefaultsKey.notchAgentsReadout) private var readout = NotchAgentReadout.elapsed.rawValue
     @AppStorage(DefaultsKey.notchAgentsLimitDisplay) private var display = NotchAgentLimitDisplay.remaining.rawValue
+    @AppStorage(DefaultsKey.notchAgentsLimitAgent) private var limitAgent = NotchAgentLimitAgent.working.rawValue
+    @AppStorage(DefaultsKey.notchAgentsLimitSpan) private var limitSpan = NotchAgentLimitSpan.highest.rawValue
 
     private var live: [AgentLiveSession] { usage.snapshot.live }
     private var working: [AgentProvider] {
@@ -87,7 +89,9 @@ struct NotchAgentStrip: View {
 
     private func reading(at now: Date) -> String {
         NotchAgentSupport.stripReading(usage.snapshot, readout: NotchAgentReadout(rawValue: readout) ?? .elapsed,
-                                       display: NotchAgentLimitDisplay(rawValue: display) ?? .remaining, now: now)
+                                       display: NotchAgentLimitDisplay(rawValue: display) ?? .remaining,
+                                       agent: NotchAgentLimitAgent(rawValue: limitAgent) ?? .working,
+                                       span: NotchAgentLimitSpan(rawValue: limitSpan) ?? .highest, now: now)
     }
 }
 
@@ -114,6 +118,8 @@ struct NotchAgentRestingWing: View {
     let leading: Bool
     @ObservedObject private var usage = AgentUsageService.shared
     @AppStorage(DefaultsKey.notchAgentsLimitDisplay) private var display = NotchAgentLimitDisplay.remaining.rawValue
+    @AppStorage(DefaultsKey.notchAgentsLimitAgent) private var limitAgent = NotchAgentLimitAgent.working.rawValue
+    @AppStorage(DefaultsKey.notchAgentsLimitSpan) private var limitSpan = NotchAgentLimitSpan.highest.rawValue
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
@@ -123,8 +129,11 @@ struct NotchAgentRestingWing: View {
 
     @ViewBuilder private func content(now: Date) -> some View {
         let snapshot = usage.snapshot
-        let candidates = snapshot.limits.compactMap { provider, limits in
-            AgentLimitSupport.binding(limits, now: now).map { (provider: provider, window: $0) }
+        // A pinned agent is the only account read; otherwise every account competes.
+        let pinned = NotchAgentLimitAgent(rawValue: limitAgent)?.provider
+        let kind = NotchAgentLimitSpan(rawValue: limitSpan)?.kind
+        let candidates = snapshot.limits.filter { pinned == nil || $0.key == pinned }.compactMap { provider, limits in
+            AgentLimitSupport.window(limits, kind: kind, now: now).map { (provider: provider, window: $0) }
         }
         let focus = candidates.max {
             $0.window.usedPercent != $1.window.usedPercent ? $0.window.usedPercent < $1.window.usedPercent

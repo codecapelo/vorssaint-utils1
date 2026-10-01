@@ -716,6 +716,27 @@ enum NotchAgentTests {
         suite.expect(NotchAgentSupport.stripReading(limited, readout: .limit, display: .remaining, now: expiredAt)
                         == AgentFormat.percent(1),
                      "a limit that renews without a new snapshot still updates from the clock")
+        // Claude works while Codex's limits are the higher ones: the reader picks whose and which window.
+        let claudeSession = AgentLimitWindow(id: "cs", kind: .session, minutes: 300, scope: nil, usedPercent: 20,
+                                             resetsAt: now.addingTimeInterval(3_600))
+        let claudeWeek = AgentLimitWindow(id: "cw", kind: .weekly, minutes: 10_080, scope: nil, usedPercent: 62,
+                                          resetsAt: now.addingTimeInterval(86_400))
+        let codexSession = AgentLimitWindow(id: "xs", kind: .session, minutes: 300, scope: nil, usedPercent: 96,
+                                            resetsAt: now.addingTimeInterval(3_600))
+        let both = snapshot([session(.claude, startedAgo: 60)],
+                            limits: [.claude: AgentLimits(provider: .claude, windows: [claudeSession, claudeWeek], observedAt: now, source: .claudeApp),
+                                     .codex: AgentLimits(provider: .codex, windows: [codexSession], observedAt: now, source: .sessionLog)])
+        func reading(_ agent: NotchAgentLimitAgent, _ span: NotchAgentLimitSpan) -> String {
+            NotchAgentSupport.stripReading(both, readout: .limit, display: .used, agent: agent, span: span, now: now)
+        }
+        suite.expect(reading(.working, .highest) == AgentFormat.percent(0.62)
+                        && reading(.working, .session) == AgentFormat.percent(0.20)
+                        && reading(.working, .weekly) == AgentFormat.percent(0.62),
+                     "the working agent's session or week can be chosen, and the higher one stays the default")
+        suite.expect(reading(.codex, .highest) == AgentFormat.percent(0.96) && reading(.claude, .session) == AgentFormat.percent(0.20),
+                     "a pinned agent shows its own limit even while another one works")
+        suite.expect(reading(.codex, .weekly) == AgentFormat.percent(0.96),
+                     "a window the account lacks falls back to the one that binds")
         suite.expect(NotchAgentSupport.readingShape("12:34") == NotchAgentSupport.readingShape("59:59")
                         && NotchAgentSupport.readingShape("9:59") != NotchAgentSupport.readingShape("10:00")
                         && NotchAgentSupport.readingShape("$4,56") == "$0,00",
@@ -1035,7 +1056,8 @@ enum NotchAgentTests {
 
         let keys = [DefaultsKey.notchAgentsEnabled, DefaultsKey.notchAgentsClaude, DefaultsKey.notchAgentsCodex,
                     DefaultsKey.notchAgentsCardOrder, DefaultsKey.notchAgentsHiddenCards, DefaultsKey.notchAgentsPeriod,
-                    DefaultsKey.notchAgentsLimitDisplay, DefaultsKey.notchAgentsLiveActivity, DefaultsKey.notchAgentsReadout,
+                    DefaultsKey.notchAgentsLimitDisplay, DefaultsKey.notchAgentsLimitAgent, DefaultsKey.notchAgentsLimitSpan,
+                    DefaultsKey.notchAgentsLiveActivity, DefaultsKey.notchAgentsReadout,
                     DefaultsKey.notchAgentsFinishAlert, DefaultsKey.notchAgentsFinishMinimum, DefaultsKey.notchAgentsLimitAlert,
                     DefaultsKey.notchAgentsLimitThreshold, DefaultsKey.notchAgentsDailyBudget, DefaultsKey.notchAgentsPriceUpdates]
         suite.expect(keys.allSatisfy { Defaults.registeredDefaults[$0] != nil } && SettingsBackupSupport.exportKeys().isSuperset(of: keys)

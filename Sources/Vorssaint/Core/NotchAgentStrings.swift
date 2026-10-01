@@ -58,6 +58,12 @@ struct NotchAgentStrings {
     let readoutElapsed: String
     let readoutTokens: String
     let readoutLimit: String
+    let limitAgentTitle: String
+    let limitAgentWorking: String
+    let limitSpanTitle: String
+    let limitSpanHighest: String
+    let limitSpanSession: String
+    let limitSpanWeekly: String
     let alerts: String
     let finishAlert: String
     let finishAfter: String
@@ -137,6 +143,18 @@ struct NotchAgentStrings {
         case .tokens: return readoutTokens
         case .cost: return apiValue.prefix(1).uppercased() + apiValue.dropFirst()
         case .limit: return readoutLimit
+        }
+    }
+
+    func limitAgent(_ agent: NotchAgentLimitAgent) -> String {
+        agent.provider?.displayName ?? limitAgentWorking
+    }
+
+    func limitSpan(_ span: NotchAgentLimitSpan) -> String {
+        switch span {
+        case .highest: return limitSpanHighest
+        case .session: return limitSpanSession
+        case .weekly: return limitSpanWeekly
         }
     }
 }
@@ -219,6 +237,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Time",
         readoutTokens: "Tokens written",
         readoutLimit: "Limit",
+        limitAgentTitle: "Limit from",
+        limitAgentWorking: "Working agent",
+        limitSpanTitle: "Limit window",
+        limitSpanHighest: "Highest",
+        limitSpanSession: "5-hour session",
+        limitSpanWeekly: "Weekly",
         alerts: "Alerts",
         finishAlert: "When a task finishes",
         finishAfter: "For tasks longer than",
@@ -312,6 +336,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Час",
         readoutTokens: "Записані токени",
         readoutLimit: "Ліміт",
+        limitAgentTitle: "Ліміт агента",
+        limitAgentWorking: "Активний агент",
+        limitSpanTitle: "Вікно ліміту",
+        limitSpanHighest: "Найвищий",
+        limitSpanSession: "5-годинна сесія",
+        limitSpanWeekly: "Тижневий",
         alerts: "Сповіщення",
         finishAlert: "Коли завдання завершено",
         finishAfter: "Для завдань довших за",
@@ -405,6 +435,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Tempo",
         readoutTokens: "Tokens escritos",
         readoutLimit: "Limite",
+        limitAgentTitle: "Limite de",
+        limitAgentWorking: "Agente em uso",
+        limitSpanTitle: "Janela do limite",
+        limitSpanHighest: "Mais alto",
+        limitSpanSession: "Sessão de 5 horas",
+        limitSpanWeekly: "Semanal",
         alerts: "Alertas",
         finishAlert: "Quando uma tarefa terminar",
         finishAfter: "Para tarefas com mais de",
@@ -498,6 +534,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Tiempo",
         readoutTokens: "Tokens escritos",
         readoutLimit: "Límite",
+        limitAgentTitle: "Límite de",
+        limitAgentWorking: "Agente activo",
+        limitSpanTitle: "Ventana del límite",
+        limitSpanHighest: "Más alto",
+        limitSpanSession: "Sesión de 5 horas",
+        limitSpanWeekly: "Semanal",
         alerts: "Avisos",
         finishAlert: "Cuando termine una tarea",
         finishAfter: "Para tareas de más de",
@@ -591,6 +633,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Čas",
         readoutTokens: "Zapísané tokeny",
         readoutLimit: "Limit",
+        limitAgentTitle: "Limit od",
+        limitAgentWorking: "Pracujúci agent",
+        limitSpanTitle: "Okno limitu",
+        limitSpanHighest: "Najvyšší",
+        limitSpanSession: "5-hodinová relácia",
+        limitSpanWeekly: "Týždenný",
         alerts: "Upozornenia",
         finishAlert: "Keď sa úloha dokončí",
         finishAfter: "Pri úlohách dlhších ako",
@@ -684,6 +732,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Zeit",
         readoutTokens: "Geschriebene Tokens",
         readoutLimit: "Limit",
+        limitAgentTitle: "Limit von",
+        limitAgentWorking: "Aktiver Agent",
+        limitSpanTitle: "Limit-Fenster",
+        limitSpanHighest: "Höchstes",
+        limitSpanSession: "5-Stunden-Sitzung",
+        limitSpanWeekly: "Wöchentlich",
         alerts: "Hinweise",
         finishAlert: "Wenn eine Aufgabe fertig ist",
         finishAfter: "Bei Aufgaben länger als",
@@ -777,6 +831,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Durée",
         readoutTokens: "Jetons écrits",
         readoutLimit: "Limite",
+        limitAgentTitle: "Limite de",
+        limitAgentWorking: "Agent actif",
+        limitSpanTitle: "Fenêtre de limite",
+        limitSpanHighest: "Plus élevée",
+        limitSpanSession: "Session de 5 heures",
+        limitSpanWeekly: "Hebdomadaire",
         alerts: "Alertes",
         finishAlert: "Quand une tâche se termine",
         finishAfter: "Pour les tâches de plus de",
@@ -870,6 +930,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Tempo",
         readoutTokens: "Token scritti",
         readoutLimit: "Limite",
+        limitAgentTitle: "Limite di",
+        limitAgentWorking: "Agente attivo",
+        limitSpanTitle: "Finestra del limite",
+        limitSpanHighest: "Più alto",
+        limitSpanSession: "Sessione di 5 ore",
+        limitSpanWeekly: "Settimanale",
         alerts: "Avvisi",
         finishAlert: "Quando un’attività finisce",
         finishAfter: "Per attività più lunghe di",
@@ -963,6 +1029,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Время",
         readoutTokens: "Написанные токены",
         readoutLimit: "Лимит",
+        limitAgentTitle: "Лимит агента",
+        limitAgentWorking: "Работающий агент",
+        limitSpanTitle: "Окно лимита",
+        limitSpanHighest: "Наибольший",
+        limitSpanSession: "5-часовая сессия",
+        limitSpanWeekly: "Недельный",
         alerts: "Уведомления",
         finishAlert: "Когда задача завершена",
         finishAfter: "Для задач дольше",
@@ -1056,6 +1128,12 @@ extension NotchAgentStrings {
         readoutElapsed: "Süre",
         readoutTokens: "Yazılan token",
         readoutLimit: "Sınır",
+        limitAgentTitle: "Sınır kaynağı",
+        limitAgentWorking: "Çalışan ajan",
+        limitSpanTitle: "Sınır penceresi",
+        limitSpanHighest: "En yüksek",
+        limitSpanSession: "5 saatlik oturum",
+        limitSpanWeekly: "Haftalık",
         alerts: "Uyarılar",
         finishAlert: "Bir görev bittiğinde",
         finishAfter: "Şundan uzun görevler için",
@@ -1149,6 +1227,12 @@ extension NotchAgentStrings {
         readoutElapsed: "時間",
         readoutTokens: "出力トークン",
         readoutLimit: "上限",
+        limitAgentTitle: "上限の対象",
+        limitAgentWorking: "作業中のエージェント",
+        limitSpanTitle: "上限の期間",
+        limitSpanHighest: "最も高い",
+        limitSpanSession: "5時間セッション",
+        limitSpanWeekly: "週間",
         alerts: "通知",
         finishAlert: "タスクが完了したとき",
         finishAfter: "対象のタスクの長さ",
@@ -1242,6 +1326,12 @@ extension NotchAgentStrings {
         readoutElapsed: "시간",
         readoutTokens: "작성한 토큰",
         readoutLimit: "한도",
+        limitAgentTitle: "한도 대상",
+        limitAgentWorking: "작업 중인 에이전트",
+        limitSpanTitle: "한도 기간",
+        limitSpanHighest: "가장 높음",
+        limitSpanSession: "5시간 세션",
+        limitSpanWeekly: "주간",
         alerts: "알림",
         finishAlert: "작업이 끝났을 때",
         finishAfter: "다음보다 긴 작업",
@@ -1335,6 +1425,12 @@ extension NotchAgentStrings {
         readoutElapsed: "时间",
         readoutTokens: "已写令牌",
         readoutLimit: "额度",
+        limitAgentTitle: "额度来源",
+        limitAgentWorking: "工作中的代理",
+        limitSpanTitle: "额度窗口",
+        limitSpanHighest: "最高",
+        limitSpanSession: "5 小时会话",
+        limitSpanWeekly: "每周",
         alerts: "提醒",
         finishAlert: "任务完成时",
         finishAfter: "任务时长超过",
@@ -1428,6 +1524,12 @@ extension NotchAgentStrings {
         readoutElapsed: "時間",
         readoutTokens: "已寫 Token",
         readoutLimit: "額度",
+        limitAgentTitle: "額度來源",
+        limitAgentWorking: "運作中的代理",
+        limitSpanTitle: "額度週期",
+        limitSpanHighest: "最高",
+        limitSpanSession: "5 小時工作階段",
+        limitSpanWeekly: "每週",
         alerts: "提醒",
         finishAlert: "任務完成時",
         finishAfter: "任務時間超過",
@@ -1521,6 +1623,12 @@ extension NotchAgentStrings {
         readoutElapsed: "時間",
         readoutTokens: "已寫 Token",
         readoutLimit: "額度",
+        limitAgentTitle: "額度來源",
+        limitAgentWorking: "運作中的代理",
+        limitSpanTitle: "額度週期",
+        limitSpanHighest: "最高",
+        limitSpanSession: "5 小時工作階段",
+        limitSpanWeekly: "每週",
         alerts: "提示",
         finishAlert: "任務完成時",
         finishAfter: "任務時間超過",

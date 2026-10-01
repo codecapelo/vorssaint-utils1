@@ -429,6 +429,17 @@ enum AgentLimitSupport {
         }
     }
 
+    /// The window of one kind, for someone who watches the session or the
+    /// week; the binding window while the account has none of that kind.
+    static func window(_ limits: AgentLimits?, kind: AgentLimitWindow.Kind?, now: Date) -> AgentLimitWindow? {
+        guard let kind, var narrowed = limits else { return binding(limits, now: now) }
+        let ofKind = narrowed.windows.filter { $0.kind == kind }
+        // A window that covers everything outranks one for a single model.
+        let covering = ofKind.filter { $0.scope == nil }
+        narrowed.windows = covering.isEmpty ? ofKind : covering
+        return binding(narrowed.windows.isEmpty ? limits : narrowed, now: now)
+    }
+
     /// Windows that reached `threshold` percent between two readings of the
     /// same account. A renewed window starts again from zero.
     static func crossings(previous: AgentLimits?, current: AgentLimits, threshold: Double) -> [AgentLimitWindow] {

@@ -43,6 +43,35 @@ enum NotchAgentLimitDisplay: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+/// Whose limit the closed island shows: the agent that is working, or one
+/// the person pinned.
+enum NotchAgentLimitAgent: String, CaseIterable, Identifiable {
+    case working, claude, codex
+    var id: String { rawValue }
+
+    var provider: AgentProvider? {
+        switch self {
+        case .working: return nil
+        case .claude: return .claude
+        case .codex: return .codex
+        }
+    }
+}
+
+/// Which of an account's windows the closed island shows.
+enum NotchAgentLimitSpan: String, CaseIterable, Identifiable {
+    case highest, session, weekly
+    var id: String { rawValue }
+
+    var kind: AgentLimitWindow.Kind? {
+        switch self {
+        case .highest: return nil
+        case .session: return .session
+        case .weekly: return .weekly
+        }
+    }
+}
+
 struct NotchAgentTile: Identifiable, Equatable {
     let card: NotchAgentCard
     /// The account a limits card belongs to.
@@ -105,6 +134,14 @@ enum NotchAgentSupport {
         isEnabled(in: defaults) && (defaults.object(forKey: DefaultsKey.notchAgentsLiveActivity) as? Bool ?? true)
     }
 
+    static func limitAgent(in defaults: UserDefaults = .standard) -> NotchAgentLimitAgent {
+        NotchAgentLimitAgent(rawValue: defaults.string(forKey: DefaultsKey.notchAgentsLimitAgent) ?? "") ?? .working
+    }
+
+    static func limitSpan(in defaults: UserDefaults = .standard) -> NotchAgentLimitSpan {
+        NotchAgentLimitSpan(rawValue: defaults.string(forKey: DefaultsKey.notchAgentsLimitSpan) ?? "") ?? .highest
+    }
+
     static func readout(in defaults: UserDefaults = .standard) -> NotchAgentReadout {
         NotchAgentReadout(rawValue: defaults.string(forKey: DefaultsKey.notchAgentsReadout) ?? "") ?? .elapsed
     }
@@ -146,7 +183,8 @@ enum NotchAgentSupport {
     /// What the strip shows beside the camera while agents work: the reading
     /// the person chose, or the time elapsed while that one is unknown.
     static func stripReading(_ snapshot: AgentUsageSnapshot, readout: NotchAgentReadout,
-                             display: NotchAgentLimitDisplay, now: Date) -> String {
+                             display: NotchAgentLimitDisplay, agent: NotchAgentLimitAgent = .working,
+                             span: NotchAgentLimitSpan = .highest, now: Date) -> String {
         let live = snapshot.live
         func elapsed() -> String { AgentFormat.clock(now.timeIntervalSince(live.map(\.started).min() ?? now)) }
         switch readout {
@@ -159,8 +197,10 @@ enum NotchAgentSupport {
         case .cost:
             return AgentFormat.cost(live.reduce(0) { $0 + $1.cost })
         case .limit:
-            guard let provider = AgentProvider.allCases.first(where: { provider in live.contains { $0.provider == provider } }),
-                  let window = AgentLimitSupport.binding(snapshot.limits[provider], now: now) else { return elapsed() }
+            let provider = agent.provider
+                ?? AgentProvider.allCases.first(where: { provider in live.contains { $0.provider == provider } })
+            guard let provider,
+                  let window = AgentLimitSupport.window(snapshot.limits[provider], kind: span.kind, now: now) else { return elapsed() }
             return AgentFormat.percent(display == .used ? window.usedFraction : window.remainingFraction)
         }
     }
